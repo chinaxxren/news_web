@@ -9,11 +9,27 @@ class ArticleForm(FlaskForm):
     title = StringField("标题", validators=[DataRequired(), Length(max=200)])
     subtitle = StringField("副标题", validators=[Length(max=200)])
     content = TextAreaField("内容", validators=[DataRequired()])
-    tags = StringField("标签（用逗号分隔）")
+    tags = StringField("标签（用英文逗号分隔）", validators=[DataRequired()])
     is_published = BooleanField("发布")
     is_top = BooleanField("置顶")
     is_recommended = BooleanField("推荐")
     submit = SubmitField("提交")
+
+    def validate_tags(self, tags):
+        if tags.data:
+            # 检查是否包含中文逗号
+            if "，" in tags.data:
+                raise ValidationError("请使用英文逗号(,)分隔标签")
+            # 检查是否包含其他特殊字符
+            if any(char in tags.data for char in [";", ":", "|", "、"]):
+                raise ValidationError("请使用英文逗号(,)分隔标签")
+            # 检查标签是否为空
+            tag_list = [tag.strip() for tag in tags.data.split(",")]
+            if any(not tag for tag in tag_list):
+                raise ValidationError("标签不能为空")
+            # 检查标签长度
+            if any(len(tag) > 50 for tag in tag_list):
+                raise ValidationError("每个标签长度不能超过50个字符")
 
 
 class TagForm(FlaskForm):
@@ -24,8 +40,6 @@ class TagForm(FlaskForm):
 class UserForm(FlaskForm):
     username = StringField("用户名", validators=[DataRequired(), Length(min=3, max=20)])
     email = StringField("邮箱", validators=[DataRequired(), Email()])
-    password = PasswordField("密码", validators=[Length(min=8)])
-    password2 = PasswordField("确认密码", validators=[EqualTo("password")])
     is_admin = BooleanField("管理员权限")
     submit = SubmitField("提交")
 

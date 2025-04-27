@@ -216,59 +216,26 @@ def users():
     return render_template("admin/users.html", users=users.items, pagination=users)
 
 
-@bp.route("/user/new", methods=["GET", "POST"])
-@login_required
-@admin_required
-def new_user():
-    form = UserForm()
-    if form.validate_on_submit():
-        user = User(
-            username=form.username.data,
-            email=form.email.data,
-            is_admin=form.is_admin.data,
-        )
-        user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        flash("用户已创建")
-        return redirect(url_for("admin.users"))
-    return render_template("admin/user_form.html", title="新建用户", form=form)
-
-
 @bp.route("/user/<int:id>/edit", methods=["GET", "POST"])
 @login_required
 @admin_required
 def edit_user(id):
     user = User.query.get_or_404(id)
-    form = UserForm()
+    form = UserForm(original_username=user.username, original_email=user.email)
     if form.validate_on_submit():
         user.username = form.username.data
         user.email = form.email.data
         user.is_admin = form.is_admin.data
-        if form.password.data:
-            user.set_password(form.password.data)
         db.session.commit()
-        flash("用户已更新")
+        flash("用户信息已更新")
         return redirect(url_for("admin.users"))
     elif request.method == "GET":
         form.username.data = user.username
         form.email.data = user.email
         form.is_admin.data = user.is_admin
-    return render_template("admin/user_form.html", title="编辑用户", form=form)
-
-
-@bp.route("/user/<int:id>/delete", methods=["POST"])
-@login_required
-@admin_required
-def delete_user(id):
-    user = User.query.get_or_404(id)
-    if user == current_user:
-        flash("不能删除当前登录的用户")
-        return redirect(url_for("admin.users"))
-    db.session.delete(user)
-    db.session.commit()
-    flash("用户已删除")
-    return redirect(url_for("admin.users"))
+    return render_template(
+        "admin/user_form.html", title="编辑用户", form=form, user=user
+    )
 
 
 @bp.route("/article/<int:article_id>/upload_image", methods=["POST"])

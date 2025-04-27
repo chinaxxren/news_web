@@ -1,12 +1,27 @@
-flask db init
-flask db migrate -m "initial migration"
-flask db upgrade
+# 启动开发服务器
 
-flask shell
+./dev.sh start
 
-> > > from app import db
-> > > from app.models import User
-> > > admin = User(username='admin', email='admin@example.com', is_admin=True)
-> > > admin.set_password('admin123')
-> > > db.session.add(admin)
-> > > db.session.commit()
+# 停止开发服务器
+
+./dev.sh stop
+
+# 重启开发服务器
+
+./dev.sh restart
+
+# 查看日志
+
+./dev.sh log
+
+# 清理开发环境
+
+./dev.sh clean
+
+# 安装开发依赖
+
+./dev.sh install
+
+# 显示帮助信息
+
+./dev.sh help
