@@ -1,0 +1,93 @@
+{% extends "base.html" %} {% block title %}Tag: {{ tag.name }}{% endblock %} {%
+block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Tag: {{ tag.name }}</h2>
+  {% if articles.items %}
+  <div class="row">
+    {% for article in articles.items %}
+    <div class="col-md-4 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">
+            <a
+              href="{{ url_for('main.article', id=article.id) }}"
+              class="text-decoration-none text-dark"
+            >
+              {{ article.title }}
+            </a>
+          </h5>
+          {% if article.subtitle %}
+          <h6 class="card-subtitle mb-2 text-muted">{{ article.subtitle }}</h6>
+          {% endif %}
+          <p class="card-text small">
+            <span class="text-muted"
+              >{{ article.created_at.strftime('%Y-%m-%d') }}</span
+            >
+            {% if article.tags %}
+            <span class="mx-1">·</span>
+            {% for tag in article.tags %}
+            <a
+              href="{{ url_for('main.tag', id=tag.id) }}"
+              class="badge bg-secondary text-decoration-none"
+              >{{ tag.name }}</a
+            >
+            {% endfor %} {% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if articles.pages > 1 %}
+  <nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if articles.has_prev %}
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="{{ url_for('main.tag', id=tag.id, page=articles.prev_num) }}"
+          >Previous</a
+        >
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">Previous</span>
+      </li>
+      {% endif %} {% for page in articles.iter_pages() %} {% if page %} {% if
+      page != articles.page %}
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="{{ url_for('main.tag', id=tag.id, page=page) }}"
+          >{{ page }}</a
+        >
+      </li>
+      {% else %}
+      <li class="page-item active">
+        <span class="page-link">{{ page }}</span>
+      </li>
+      {% endif %} {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">...</span>
+      </li>
+      {% endif %} {% endfor %} {% if articles.has_next %}
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="{{ url_for('main.tag', id=tag.id, page=articles.next_num) }}"
+          >Next</a
+        >
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">Next</span>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %} {% else %}
+  <p>No related articles.</p>
+  {% endif %}
+</div>
+{% endblock %}

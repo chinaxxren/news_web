@@ -1,0 +1,32 @@
+{% extends "base.html" %} {% block title %}搜索结果{% endblock %} {% block
+content %}
+<div class="row">
+  <div class="col-md-8">
+    <h2>搜索结果: "{{ query }}"</h2>
+    {% if articles %} {% for article in articles %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <h3 class="card-title">
+          <a
+            href="{{ url_for('main.article', id=article.id) }}"
+            class="text-decoration-none"
+          >
+            {{ article.title }}
+          </a>
+        </h3>
+        <p class="card-text">{{ article.content[:200] }}...</p>
+        <div class="d-flex justify-content-between">
+          <small class="text-muted">作者: {{ article.author.username }}</small>
+          <small class="text-muted"
+            >发布时间: {{ article.created_at.strftime('%Y-%m-%d %H:%M')
+            }}</small
+          >
+        </div>
+      </div>
+    </div>
+    {% endfor %} {% else %}
+    <div class="alert alert-info">没有找到相关文章</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

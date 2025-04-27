@@ -1,0 +1,65 @@
+{% extends "admin/base.html" %} {% block admin_title %}{{ title }}{% endblock %}
+{% block admin_content %}
+<div class="row">
+  <div class="col-md-6">
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="mb-3">
+        {{ form.username.label(class="form-label") }} {{
+        form.username(class="form-control") }} {% for error in
+        form.username.errors %}
+        <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+      </div>
+      <div class="mb-3">
+        {{ form.email.label(class="form-label") }} {{
+        form.email(class="form-control") }} {% for error in form.email.errors %}
+        <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+      </div>
+      <div class="mb-3">
+        {{ form.password.label(class="form-label") }} {{
+        form.password(class="form-control") }} {% for error in
+        form.password.errors %}
+        <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+      </div>
+      <div class="mb-3">
+        {{ form.password2.label(class="form-label") }} {{
+        form.password2(class="form-control") }} {% for error in
+        form.password2.errors %}
+        <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+      </div>
+      <div class="mb-3">
+        <div class="form-check">
+          {{ form.is_admin(class="form-check-input") }} {{
+          form.is_admin.label(class="form-check-label") }}
+        </div>
+      </div>
+      <div class="mb-3">
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ url_for('admin.users') }}" class="btn btn-secondary"
+          >取消</a
+        >
+      </div>
+    </form>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">编辑提示</h5>
+      </div>
+      <div class="card-body">
+        <ul class="mb-0">
+          <li>用户名是必填项，长度在3-20个字符之间</li>
+          <li>邮箱地址必须是有效的邮箱格式</li>
+          <li>密码长度至少为8个字符</li>
+          <li>两次输入的密码必须一致</li>
+          <li>管理员权限可以访问后台管理功能</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
