@@ -6,6 +6,7 @@ from config import Config
 import markdown
 from flask import Markup
 from flask_babel import Babel
+from datetime import datetime, timedelta
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -36,10 +37,34 @@ def create_app(config_class=Config):
 
     app.register_blueprint(admin_bp, url_prefix="/admin")
 
+    # 注册命令
+    from app.commands import init_data
+
+    app.cli.add_command(init_data)
+
     def markdown_filter(text):
         return Markup(markdown.markdown(text, extensions=["fenced_code", "codehilite"]))
 
     app.jinja_env.filters["markdown"] = markdown_filter
+
+    def friendly_time(dt):
+        now = datetime.utcnow()
+        diff = now - dt
+        if diff < timedelta(minutes=1):
+            return "just now"
+        elif diff < timedelta(hours=1):
+            mins = int(diff.total_seconds() // 60)
+            return f"{mins}m ago"
+        elif diff < timedelta(days=1):
+            hours = int(diff.total_seconds() // 3600)
+            return f"{hours}h ago"
+        elif diff < timedelta(days=7):
+            days = diff.days
+            return f"{days}d ago"
+        else:
+            return dt.strftime("%Y-%m-%d")
+
+    app.jinja_env.filters["friendly_time"] = friendly_time
 
     return app
 

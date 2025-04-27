@@ -79,7 +79,7 @@ def tag(id):
             Article.tags.any(Tag.id == id), Article.is_published == True
         )
         .order_by(Article.created_at.desc())
-        .paginate(page=page, per_page=current_app.config["POSTS_PER_PAGE"])
+        .paginate(page=page, per_page=20)
     )
     return render_template("main/tag.html", tag=tag, articles=articles)
 
@@ -87,14 +87,33 @@ def tag(id):
 @bp.route("/search")
 def search():
     query = request.args.get("q", "")
+    page = request.args.get("page", 1, type=int)
+    per_page = current_app.config.get("POSTS_PER_PAGE", 9)
+    articles = []
+    pagination = None
     if query:
-        articles = (
-            Article.query.filter(
-                Article.title.contains(query) | Article.content.contains(query)
+        try:
+            sql = """
+                SELECT id FROM article
+                WHERE article MATCH :q AND is_published=1
+                ORDER BY rank
+            """
+            result = db.session.execute(sql, {"q": query})
+            ids = [row[0] for row in result]
+            if ids:
+                q = Article.query.filter(Article.id.in_(ids))
+                pagination = q.paginate(page=page, per_page=per_page)
+                articles = pagination.items
+            else:
+                articles = []
+                pagination = None
+        except Exception:
+            q = Article.query.filter(
+                (Article.title.contains(query) | Article.content.contains(query))
+                & (Article.is_published == True)
             )
-            .filter_by(is_published=True)
-            .all()
-        )
-    else:
-        articles = []
-    return render_template("search.html", articles=articles, query=query)
+            pagination = q.paginate(page=page, per_page=per_page)
+            articles = pagination.items
+    return render_template(
+        "search.html", articles=articles, query=query, pagination=pagination
+    )
