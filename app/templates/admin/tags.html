@@ -1,11 +1,11 @@
-{% extends "admin/base.html" %} {% block admin_title %}标签管理{% endblock %} {%
+{% extends "admin/base.html" %} {% block admin_title %}主题管理{% endblock %} {%
 block admin_actions %}
 <div class="btn-group">
   <a
     href="{{ url_for('admin.new_tag') }}"
     class="btn btn-sm btn-outline-primary"
   >
-    <i class="fas fa-plus"></i> 新建标签
+    <i class="fas fa-plus"></i> 新建主题
   </a>
 </div>
 {% endblock %} {% block admin_content %}
@@ -14,7 +14,7 @@ block admin_actions %}
     <thead>
       <tr>
         <th>ID</th>
-        <th>标签名称</th>
+        <th>主题名称</th>
         <th>文章数量</th>
         <th>创建时间</th>
         <th>操作</th>
@@ -32,7 +32,7 @@ block admin_actions %}
           >
         </td>
         <td>{{ tag.articles|length }}</td>
-        <td>{{ tag.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>{{ tag.created_at.strftime('%Y-%m-%d') }}</td>
         <td>
           <div class="btn-group btn-group-sm">
             <a
@@ -49,7 +49,7 @@ block admin_actions %}
               <button
                 type="submit"
                 class="btn btn-outline-danger"
-                onclick="return confirm('确定要删除这个标签吗？')"
+                onclick="return confirm('确定要删除这个主题吗？')"
               >
                 <i class="fas fa-trash"></i>
               </button>

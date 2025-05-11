@@ -1,63 +1,62 @@
 {% extends "base.html" %} {% block content %}
-<div class="container-fluid">
-  <div class="row">
-    <!-- 侧边栏 -->
-    <nav class="col-md-2 d-none d-md-block bg-light sidebar">
-      <div class="sidebar-sticky">
-        <ul class="nav flex-column">
-          <li class="nav-item">
-            <a
-              class="nav-link {% if request.endpoint == 'admin.index' %}active{% endif %}"
-              href="{{ url_for('admin.index') }}"
-            >
-              <i class="fas fa-tachometer-alt"></i> 控制面板
-            </a>
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link {% if request.endpoint == 'admin.articles' %}active{% endif %}"
-              href="{{ url_for('admin.articles') }}"
-            >
-              <i class="fas fa-file-alt"></i> 文章管理
-            </a>
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link {% if request.endpoint == 'admin.tags' %}active{% endif %}"
-              href="{{ url_for('admin.tags') }}"
-            >
-              <i class="fas fa-tags"></i> 标签管理
-            </a>
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link {% if request.endpoint == 'admin.users' %}active{% endif %}"
-              href="{{ url_for('admin.users') }}"
-            >
-              <i class="fas fa-users"></i> 用户管理
-            </a>
-          </li>
-        </ul>
-      </div>
-    </nav>
-
-    <!-- 主内容区 -->
-    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
-      <div
-        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
-      >
-        <h1 class="h2">{% block admin_title %}{% endblock %}</h1>
-        <div class="btn-toolbar mb-2 mb-md-0">
-          {% block admin_actions %}{% endblock %}
+<body class="admin">
+  <!-- 只保留一个 navbar，如上 -->
+  <div class="container-fluid">
+    <div class="row">
+      <!-- 侧边栏 -->
+      <nav class="col-1 bg-light sidebar">
+        <div class="sidebar-sticky">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a
+                class="nav-link {% if request.endpoint == 'admin.index' %}active{% endif %}"
+                href="{{ url_for('admin.index') }}"
+              >
+                <i class="fas fa-tachometer-alt"></i> 控制面板
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link {% if request.endpoint == 'admin.articles' %}active{% endif %}"
+                href="{{ url_for('admin.articles') }}"
+              >
+                <i class="fas fa-file-alt"></i> 文章管理
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link {% if request.endpoint == 'admin.tags' %}active{% endif %}"
+                href="{{ url_for('admin.tags') }}"
+              >
+                <i class="fas fa-tags"></i> 主题管理
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link {% if request.endpoint == 'admin.users' %}active{% endif %}"
+                href="{{ url_for('admin.users') }}"
+              >
+                <i class="fas fa-users"></i> 用户管理
+              </a>
+            </li>
+          </ul>
         </div>
-      </div>
-
-      {% with messages = get_flashed_messages() %} {% if messages %} {% for
-      message in messages %}
-      <div class="alert alert-info">{{ message }}</div>
-      {% endfor %} {% endif %} {% endwith %} {% block admin_content %}{%
-      endblock %}
-    </main>
+      </nav>
+      <!-- 主内容区 -->
+      <main class="col-11 px-4">
+        {% with messages = get_flashed_messages() %} {% if messages %} {% for
+        message in messages %}
+        <div class="alert alert-info">{{ message }}</div>
+        {% endfor %} {% endif %} {% endwith %} {% block admin_content %}{%
+        endblock %}
+      </main>
+    </div>
   </div>
-</div>
+  <footer class="footer mt-5 py-3 bg-light">
+    <div class="container text-center">
+      <span class="text-muted">© 2025 News Portal</span>
+    </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 {% endblock %}

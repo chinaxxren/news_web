@@ -1,31 +1,29 @@
-{% extends "base.html" %} {% block title %}Tag: {{ tag.name }}{% endblock %} {%
-block content %}
+{% extends "base.html" %} {% block title %}Theme: {{ tag.name }}{% endblock %}
+{% block content %}
 <div class="container mt-4">
-  <h2 class="mb-4">Tag: {{ tag.name }}</h2>
-  {% if articles.items %}
-  <div class="timeline">
-    {% for article in articles.items %}
-    <div class="timeline-item mb-4 d-flex">
-      <div
-        class="timeline-date text-secondary text-end pe-3"
-        style="min-width: 100px"
-      >
-        {{ article.created_at|friendly_time }}
-      </div>
+  <h2 class="mb-4">Theme: {{ tag.name }}</h2>
+  {% if articles.items %} {% for article in articles.items %}
+  <div
+    class="article-list-row{% if not loop.last %} not-last{% endif %}"
+    onclick="window.location='{{ url_for('main.article', id=article.id) }}'"
+    style="cursor: pointer"
+  >
+    <div class="article-list-tags">
+      {% for tag in article.tags %}
       <a
-        href="{{ url_for('main.article', id=article.id) }}"
-        class="timeline-content flex-grow-1 p-3 bg-white rounded shadow-sm text-decoration-none text-dark d-block"
+        href="{{ url_for('main.tag', id=tag.id) }}"
+        class="badge bg-secondary text-decoration-none"
+        onclick="event.stopPropagation();"
+        >{{ tag.name }}</a
       >
-        <h5>{{ article.title }}</h5>
-        {% if article.subtitle %}
-        <div class="text-muted mb-2">{{ article.subtitle }}</div>
-        {% endif %}
-      </a>
+      {% endfor %}
     </div>
-    {% endfor %}
+    <div class="article-list-title">{{ article.title }}</div>
+    <div class="article-list-date">
+      {{ article.created_at.strftime('%Y-%m-%d') }}
+    </div>
   </div>
-
-  {% if articles.pages > 1 %}
+  {% endfor %} {% if articles.pages > 1 %}
   <nav aria-label="Page navigation" class="mt-4">
     <ul class="pagination justify-content-center">
       {% if articles.has_prev %}
@@ -54,7 +52,9 @@ block content %}
         <span class="page-link">{{ page }}</span>
       </li>
       {% endif %} {% else %}
-      <li class="page-item disabled"><span class="page-link">...</span></li>
+      <li class="page-item disabled">
+        <span class="page-link">...</span>
+      </li>
       {% endif %} {% endfor %} {% if articles.has_next %}
       <li class="page-item">
         <a
@@ -64,7 +64,9 @@ block content %}
         >
       </li>
       {% else %}
-      <li class="page-item disabled"><span class="page-link">Next</span></li>
+      <li class="page-item disabled">
+        <span class="page-link">Next</span>
+      </li>
       {% endif %}
     </ul>
   </nav>

@@ -3,7 +3,7 @@
 <div class="row">
   <div class="col-md-8">
     <form method="post" novalidate>
-      {{ form.hidden_tag() }}
+      {{ form.csrf_token }}
       <div class="mb-3">
         {{ form.title.label(class="form-label") }} {{
         form.title(class="form-control") }} {% for error in form.title.errors %}
@@ -54,18 +54,13 @@
       </div>
     </form>
 
-    {% if article %}
     <div class="card mt-4">
       <div class="card-header">
         <h5 class="mb-0">图片管理</h5>
       </div>
       <div class="card-body">
-        <form
-          method="post"
-          enctype="multipart/form-data"
-          action="{{ url_for('admin.upload_image', article_id=article.id) }}"
-        >
-          {{ image_form.hidden_tag() }}
+        <form id="uploadForm" method="post" enctype="multipart/form-data">
+          {{ image_form.csrf_token }}
           <div class="mb-3">
             {{ image_form.image(class="form-control") }} {% for error in
             image_form.image.errors %}
@@ -73,12 +68,14 @@
             {% endfor %}
           </div>
           <div class="mb-3">
-            {{ image_form.submit(class="btn btn-primary") }}
+            <button type="submit" class="btn btn-primary" id="uploadButton">
+              <i class="fas fa-upload"></i> 上传
+            </button>
           </div>
         </form>
 
-        <div class="row mt-3">
-          {% for image in article.images %}
+        <div class="row mt-3" id="imageList">
+          {% if article %} {% for image in article.images %}
           <div class="col-md-4 mb-3">
             <div class="card">
               <img
@@ -94,8 +91,13 @@
                 <form
                   method="post"
                   action="{{ url_for('admin.delete_image', id=image.id) }}"
-                  class="d-inline"
+                  class="d-inline delete-image-form"
                 >
+                  <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                  />
                   <button
                     type="submit"
                     class="btn btn-sm btn-outline-danger"
@@ -114,11 +116,10 @@
               </div>
             </div>
           </div>
-          {% endfor %}
+          {% endfor %} {% endif %}
         </div>
       </div>
     </div>
-    {% endif %}
   </div>
   <div class="col-md-4">
     <div class="card">
@@ -142,22 +143,136 @@
   </div>
 </div>
 
-{% if article %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
+    // 复制Markdown功能
     const copyButtons = document.querySelectorAll(".copy-markdown");
     copyButtons.forEach((button) => {
-      button.addEventListener("click", function () {
-        const markdown = this.dataset.markdown;
-        navigator.clipboard.writeText(markdown).then(() => {
-          const originalText = this.innerHTML;
+      button.addEventListener("click", async function () {
+        try {
+          const markdown = this.dataset.markdown;
+          await navigator.clipboard.writeText(markdown);
+
+          // 保存原始按钮内容
+          const originalHTML = this.innerHTML;
+
+          // 更新按钮状态
           this.innerHTML = '<i class="fas fa-check"></i> 已复制';
+          this.classList.add("btn-success");
+          this.classList.remove("btn-outline-primary");
+
+          // 2秒后恢复原始状态
           setTimeout(() => {
-            this.innerHTML = originalText;
+            this.innerHTML = originalHTML;
+            this.classList.remove("btn-success");
+            this.classList.add("btn-outline-primary");
           }, 2000);
-        });
+        } catch (err) {
+          console.error("复制失败:", err);
+          alert("复制失败，请手动复制");
+        }
       });
+    });
+
+    // 图片上传功能
+    const uploadForm = document.getElementById("uploadForm");
+    const uploadButton = document.getElementById("uploadButton");
+    const imageList = document.getElementById("imageList");
+
+    uploadForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+      const csrfToken = document.querySelector(
+        'input[name="csrf_token"]'
+      ).value;
+      formData.append("csrf_token", csrfToken);
+
+      uploadButton.disabled = true;
+      uploadButton.innerHTML =
+        '<i class="fas fa-spinner fa-spin"></i> 上传中...';
+
+      const articleId = '{{ article.id if article else "new" }}';
+      const uploadUrl =
+        articleId === "new"
+          ? '{{ url_for("admin.upload_image", article_id="new") }}'
+          : '{{ url_for("admin.upload_image", article_id=article.id) if article else "" }}';
+
+      fetch(uploadUrl, {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            // 添加新图片到列表
+            const imageHtml = `
+            <div class="col-md-4 mb-3">
+              <div class="card">
+                <img src="${data.image_url}" class="card-img-top" alt="${
+              data.original_filename
+            }" />
+                <div class="card-body">
+                  <p class="card-text small">
+                    ${data.original_filename}<br />
+                    ${(data.file_size / 1024).toFixed(1)} KB
+                  </p>
+                  <form method="post" action="/admin/image/${
+                    data.image_id
+                  }/delete" class="d-inline delete-image-form">
+                    <input type="hidden" name="csrf_token" value="${csrfToken}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定要删除这张图片吗？')">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                  <button type="button" class="btn btn-sm btn-outline-primary copy-markdown" data-markdown="![${
+                    data.original_filename
+                  }](${data.image_url})">
+                    <i class="fas fa-copy"></i> 复制Markdown
+                  </button>
+                </div>
+              </div>
+            </div>`;
+            imageList.insertAdjacentHTML("beforeend", imageHtml);
+
+            // 为新添加的按钮绑定事件
+            const newButton =
+              imageList.lastElementChild.querySelector(".copy-markdown");
+            newButton.addEventListener("click", async function () {
+              try {
+                const markdown = this.dataset.markdown;
+                await navigator.clipboard.writeText(markdown);
+
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                this.classList.add("btn-success");
+                this.classList.remove("btn-outline-primary");
+
+                setTimeout(() => {
+                  this.innerHTML = originalHTML;
+                  this.classList.remove("btn-success");
+                  this.classList.add("btn-outline-primary");
+                }, 2000);
+              } catch (err) {
+                console.error("复制失败:", err);
+                alert("复制失败，请手动复制");
+              }
+            });
+
+            uploadForm.reset();
+          } else {
+            alert(data.message || "上传失败");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("上传失败，请重试");
+        })
+        .finally(() => {
+          uploadButton.disabled = false;
+          uploadButton.innerHTML = '<i class="fas fa-upload"></i> 上传';
+        });
     });
   });
 </script>
-{% endif %} {% endblock %}
+{% endblock %}

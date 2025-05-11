@@ -34,10 +34,10 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
+              <!-- <a class="nav-link" href="{{ url_for('main.index') }}">Home</a> -->
             </li>
           </ul>
-          <form
+          <!-- <form
             class="d-flex me-2"
             action="{{ url_for('main.search') }}"
             method="get"
@@ -51,7 +51,7 @@
             <button class="btn btn-outline-success" type="submit">
               Search
             </button>
-          </form>
+          </form> -->
           <ul class="navbar-nav">
             {% if current_user.is_authenticated %}
             <li class="nav-item">
@@ -68,7 +68,7 @@
       </div>
     </nav>
 
-    <div class="container mt-4">
+    <div class="container">
       {% with messages = get_flashed_messages() %} {% if messages %} {% for
       message in messages %}
       <div class="alert alert-info">{{ message }}</div>
@@ -77,7 +77,7 @@
 
     <footer class="footer mt-5 py-3 bg-light">
       <div class="container text-center">
-        <span class="text-muted">© 2024 News Portal</span>
+        <span class="text-muted">© 2025 News Portal</span>
       </div>
     </footer>
 

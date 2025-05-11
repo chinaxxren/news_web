@@ -1,0 +1,27 @@
+{% extends "base.html" %} {% block title %}{{ article.title }}{% endblock %} {%
+block content %}
+<div class="container mt-4 article-detail-container">
+  <article class="blog-post">
+    <h1 class="blog-post-title">{{ article.title }}</h1>
+    {% if article.subtitle %}
+    <p class="blog-post-subtitle text-muted">{{ article.subtitle }}</p>
+    {% endif %}
+    <p class="blog-post-meta text-muted">
+      {{ article.created_at.strftime('%Y-%m-%d %H:%M') }} by
+      <a href="#">{{ article.author.username }}</a>
+    </p>
+
+    <div class="blog-post-content">{{ article.content|markdown|safe }}</div>
+
+    <div class="blog-post-tags mt-4">
+      {% for tag in article.tags %}
+      <a
+        href="{{ url_for('main.tag', id=tag.id) }}"
+        class="badge bg-secondary text-decoration-none"
+        >{{ tag.name }}</a
+      >
+      {% endfor %}
+    </div>
+  </article>
+</div>
+{% endblock %}

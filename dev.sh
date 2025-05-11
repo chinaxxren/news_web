@@ -6,8 +6,8 @@ set -e
 # 应用名称和端口
 APP_NAME="news_web"
 PORT=5000
-PID_FILE="dev.pid"
-LOG_FILE="dev.log"
+PID_FILE="app.pid"
+LOG_FILE="app.log"
 
 # 获取本机IP地址
 get_ip() {
@@ -35,7 +35,7 @@ stop_app() {
     echo "停止开发服务器..."
     PID=$(get_pid)
     if [ ! -z "$PID" ]; then
-        kill $PID
+        kill $PID 2>/dev/null || true
         rm -f $PID_FILE
         echo "开发服务器已停止"
     else
@@ -47,7 +47,7 @@ stop_app() {
 start_app() {
     echo "启动开发服务器..."
     # 设置开发环境变量
-    export FLASK_APP=app
+    export FLASK_APP=run.py
     export FLASK_ENV=development
     export FLASK_DEBUG=1
     
@@ -58,8 +58,8 @@ start_app() {
         exit 1
     fi
     
-    # 使用 flask run 启动开发服务器，启用调试模式和自动重载
-    nohup flask run --host=0.0.0.0 --port=$PORT --debugger --reload > $LOG_FILE 2>&1 &
+    # 使用 python 运行应用
+    nohup python run.py > $LOG_FILE 2>&1 &
     echo $! > $PID_FILE
     echo "开发服务器已启动，PID: $(get_pid)"
     echo "日志文件: $LOG_FILE"
@@ -83,16 +83,44 @@ clean() {
     stop_app
     find . -type d -name "__pycache__" -exec rm -rf {} +
     find . -type f -name "*.pyc" -delete
+    find . -type f -name "*.pyo" -delete
+    find . -type f -name "*.pyd" -delete
+    find . -type f -name ".coverage" -delete
+    find . -type d -name "*.egg-info" -exec rm -rf {} +
+    find . -type d -name "*.egg" -exec rm -rf {} +
+    find . -type d -name ".pytest_cache" -exec rm -rf {} +
+    find . -type d -name ".mypy_cache" -exec rm -rf {} +
+    find . -type d -name ".coverage" -exec rm -rf {} +
+    find . -type d -name "htmlcov" -exec rm -rf {} +
     rm -f $LOG_FILE
     echo "清理完成"
 }
 
-# 安装开发依赖
-install_dev() {
-    echo "安装开发依赖..."
+# 安装依赖
+install_deps() {
+    echo "安装项目依赖..."
     pip install -r requirements.txt
-    pip install -r requirements-dev.txt
-    echo "开发依赖安装完成"
+    echo "依赖安装完成"
+}
+
+# 运行测试
+run_tests() {
+    echo "运行测试..."
+    pytest --cov=app tests/
+}
+
+# 代码格式化
+format_code() {
+    echo "格式化代码..."
+    black .
+    isort .
+}
+
+# 代码检查
+check_code() {
+    echo "检查代码..."
+    flake8 .
+    mypy .
 }
 
 # 显示帮助信息
@@ -106,7 +134,10 @@ show_help() {
     echo "  restart  重启开发服务器"
     echo "  log      显示日志"
     echo "  clean    清理开发环境"
-    echo "  install  安装开发依赖"
+    echo "  install  安装项目依赖"
+    echo "  test     运行测试"
+    echo "  format   格式化代码"
+    echo "  check    检查代码"
     echo "  help     显示帮助信息"
 }
 
@@ -129,7 +160,16 @@ case "$1" in
         clean
         ;;
     install)
-        install_dev
+        install_deps
+        ;;
+    test)
+        run_tests
+        ;;
+    format)
+        format_code
+        ;;
+    check)
+        check_code
         ;;
     help|*)
         show_help

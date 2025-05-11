@@ -1,30 +1,63 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_login import LoginManager
-from config import Config
-import markdown
-from flask import Markup
-from flask_babel import Babel
+#!/usr/bin/env python
+import os
+from flask import Flask, Markup
 from datetime import datetime, timedelta
+import markdown
+import logging
+from dotenv import load_dotenv
+from app.extensions import db, login, babel
+from app.database import get_or_create
+from flask_wtf.csrf import CSRFProtect
 
-db = SQLAlchemy()
-migrate = Migrate()
-login = LoginManager()
-login.login_view = "auth.login"
-login.login_message = "请先登录"
-babel = Babel()
+# 基础配置
+basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+load_dotenv(os.path.join(basedir, ".env"))
+
+# 日志配置
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler(os.path.join(basedir, "app.log")),
+        logging.StreamHandler(),
+    ],
+)
+logger = logging.getLogger(__name__)
+
+
+# 应用配置
+class Config:
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "dev"
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        "DATABASE_URL"
+    ) or "sqlite:///" + os.path.join(basedir, "app.db")
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    POSTS_PER_PAGE = 20
+    UPLOAD_FOLDER = os.path.join(basedir, "app/static/uploads")
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
+    ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "gif"}
+    PERMANENT_SESSION_LIFETIME = timedelta(days=7)
+    LANGUAGES = ["en", "zh"]
+    BABEL_DEFAULT_LOCALE = "en"
+    ADMIN_USERNAME = "admin"
+    ADMIN_EMAIL = "admin@example.com"
+    ADMIN_PASSWORD = "admin"
+    WTF_CSRF_ENABLED = True
+    WTF_CSRF_SECRET_KEY = os.environ.get("WTF_CSRF_SECRET_KEY") or "dev-csrf-key"
 
 
 def create_app(config_class=Config):
+    """创建并配置Flask应用"""
     app = Flask(__name__)
     app.config.from_object(config_class)
 
+    # 初始化扩展
     db.init_app(app)
-    migrate.init_app(app, db)
     login.init_app(app)
     babel.init_app(app)
+    csrf = CSRFProtect(app)
 
+    # 注册蓝图
     from app.main import bp as main_bp
 
     app.register_blueprint(main_bp)
@@ -42,6 +75,7 @@ def create_app(config_class=Config):
 
     app.cli.add_command(init_data)
 
+    # 注册模板过滤器
     def markdown_filter(text):
         return Markup(markdown.markdown(text, extensions=["fenced_code", "codehilite"]))
 
@@ -66,7 +100,24 @@ def create_app(config_class=Config):
 
     app.jinja_env.filters["friendly_time"] = friendly_time
 
+    # 初始化应用
+    with app.app_context():
+        # 创建数据库表
+        db.create_all()
+
+        # 创建管理员用户
+        from app.models import User
+
+        admin, created = get_or_create(
+            User,
+            username=Config.ADMIN_USERNAME,
+            defaults={"email": Config.ADMIN_EMAIL, "is_admin": True},
+        )
+        if created:
+            admin.set_password(Config.ADMIN_PASSWORD)
+            logger.info("管理员用户已创建")
+
+        # 确保上传目录存在
+        os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
     return app
-
-
-from app import models

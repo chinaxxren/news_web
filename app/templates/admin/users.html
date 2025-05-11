@@ -25,7 +25,7 @@ block admin_actions %} {% endblock %} {% block admin_content %}
           <span class="badge bg-secondary">普通用户</span>
           {% endif %}
         </td>
-        <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
         <td>
           <a
             href="{{ url_for('admin.edit_user', id=user.id) }}"

@@ -1,11 +1,19 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from wtforms import StringField, TextAreaField, BooleanField, SubmitField, PasswordField
+from wtforms import (
+    StringField,
+    TextAreaField,
+    BooleanField,
+    SubmitField,
+    PasswordField,
+    HiddenField,
+)
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from app.models import User
 
 
 class ArticleForm(FlaskForm):
+    csrf_token = HiddenField()
     title = StringField("标题", validators=[DataRequired(), Length(max=200)])
     subtitle = StringField("副标题", validators=[Length(max=200)])
     content = TextAreaField("内容", validators=[DataRequired()])
@@ -33,11 +41,13 @@ class ArticleForm(FlaskForm):
 
 
 class TagForm(FlaskForm):
+    csrf_token = HiddenField()
     name = StringField("标签名称", validators=[DataRequired(), Length(max=50)])
     submit = SubmitField("提交")
 
 
 class UserForm(FlaskForm):
+    csrf_token = HiddenField()
     username = StringField("用户名", validators=[DataRequired(), Length(min=3, max=20)])
     email = StringField("邮箱", validators=[DataRequired(), Email()])
     is_admin = BooleanField("管理员权限")
@@ -62,6 +72,7 @@ class UserForm(FlaskForm):
 
 
 class ImageUploadForm(FlaskForm):
+    csrf_token = HiddenField()
     image = FileField(
         "选择图片",
         validators=[

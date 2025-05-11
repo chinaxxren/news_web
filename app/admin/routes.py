@@ -1,4 +1,12 @@
-from flask import render_template, redirect, url_for, flash, request, current_app
+from flask import (
+    render_template,
+    redirect,
+    url_for,
+    flash,
+    request,
+    current_app,
+    jsonify,
+)
 from flask_login import login_required, current_user
 from app import db
 from app.admin import bp
@@ -72,6 +80,7 @@ def articles():
 @admin_required
 def new_article():
     form = ArticleForm()
+    image_form = ImageUploadForm()
     if request.method == "GET":
         form.is_published.data = True
     if form.validate_on_submit():
@@ -97,7 +106,9 @@ def new_article():
         db.session.commit()
         flash("文章已创建")
         return redirect(url_for("admin.articles"))
-    return render_template("admin/article_form.html", title="新建文章", form=form)
+    return render_template(
+        "admin/article_form.html", title="新建文章", form=form, image_form=image_form
+    )
 
 
 @bp.route("/article/<int:id>/edit", methods=["GET", "POST"])
@@ -238,42 +249,66 @@ def edit_user(id):
     )
 
 
-@bp.route("/article/<int:article_id>/upload_image", methods=["POST"])
+@bp.route("/article/<article_id>/upload", methods=["POST"])
 @login_required
 @admin_required
 def upload_image(article_id):
-    article = Article.query.get_or_404(article_id)
+    """上传文章图片"""
     form = ImageUploadForm()
     if form.validate_on_submit():
-        file = form.image.data
-        if file:
-            # 生成唯一文件名
+        try:
+            file = form.image.data
             filename = secure_filename(file.filename)
+            # 生成唯一文件名
             unique_filename = f"{uuid.uuid4().hex}_{filename}"
-
-            # 保存文件
-            upload_folder = os.path.join(current_app.static_folder, "uploads")
-            if not os.path.exists(upload_folder):
-                os.makedirs(upload_folder)
-            file_path = os.path.join(upload_folder, unique_filename)
+            file_path = os.path.join(
+                current_app.config["UPLOAD_FOLDER"], unique_filename
+            )
             file.save(file_path)
 
-            # 创建图片记录
-            image = Image(
-                filename=unique_filename,
-                original_filename=filename,
-                file_size=os.path.getsize(file_path),
-                file_type=file.content_type,
-                article=article,
-            )
-            db.session.add(image)
-            db.session.commit()
+            # 获取文件类型
+            file_type = file.content_type
 
-            flash("图片上传成功")
-    else:
-        for error in form.image.errors:
-            flash(error)
-    return redirect(url_for("admin.edit_article", id=article_id))
+            # 如果是新建文章，创建临时图片记录
+            if article_id == "new":
+                image = Image(
+                    filename=unique_filename,
+                    original_filename=filename,
+                    file_size=os.path.getsize(file_path),
+                    file_type=file_type,
+                    article_id=None,  # 临时设置为None
+                )
+                db.session.add(image)
+                db.session.commit()
+            else:
+                # 检查文章是否存在
+                article = Article.query.get_or_404(int(article_id))
+                # 创建图片记录
+                image = Image(
+                    filename=unique_filename,
+                    original_filename=filename,
+                    file_size=os.path.getsize(file_path),
+                    file_type=file_type,
+                    article_id=article.id,
+                )
+                db.session.add(image)
+                db.session.commit()
+
+            return jsonify(
+                {
+                    "success": True,
+                    "image_id": image.id,
+                    "image_url": url_for(
+                        "static", filename=f"uploads/{unique_filename}"
+                    ),
+                    "original_filename": filename,
+                    "file_size": os.path.getsize(file_path),
+                }
+            )
+        except Exception as e:
+            current_app.logger.error(f"上传图片失败: {str(e)}")
+            return jsonify({"success": False, "message": "上传失败"}), 500
+    return jsonify({"success": False, "message": "文件格式不正确"}), 400
 
 
 @bp.route("/image/<int:id>/delete", methods=["POST"])
@@ -281,12 +316,15 @@ def upload_image(article_id):
 @admin_required
 def delete_image(id):
     image = Image.query.get_or_404(id)
-    # 删除文件
-    file_path = os.path.join(current_app.static_folder, "uploads", image.filename)
-    if os.path.exists(file_path):
-        os.remove(file_path)
-    # 删除数据库记录
-    db.session.delete(image)
-    db.session.commit()
-    flash("图片已删除")
-    return redirect(url_for("admin.edit_article", id=image.article_id))
+    try:
+        # 删除文件
+        file_path = os.path.join(current_app.static_folder, "uploads", image.filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        # 删除数据库记录
+        db.session.delete(image)
+        db.session.commit()
+        return {"success": True, "message": "图片已删除"}
+    except Exception as e:
+        current_app.logger.error(f"图片删除失败: {str(e)}")
+        return {"success": False, "message": "图片删除失败，请重试"}

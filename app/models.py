@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import db, login
+from app.extensions import db, login
 
 
 class User(UserMixin, db.Model):
@@ -76,3 +76,35 @@ class Image(db.Model):
 
     def __repr__(self):
         return f"<Image {self.filename}>"
+
+
+class News(db.Model):
+    __tablename__ = "news"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    source = db.Column(db.String(100))
+    url = db.Column(db.String(500))
+    published_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    def __repr__(self):
+        return f"<News {self.title}>"
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "content": self.content,
+            "source": self.source,
+            "url": self.url,
+            "published_at": (
+                self.published_at.isoformat() if self.published_at else None
+            ),
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }

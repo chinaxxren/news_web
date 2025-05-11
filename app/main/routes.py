@@ -79,7 +79,7 @@ def tag(id):
             Article.tags.any(Tag.id == id), Article.is_published == True
         )
         .order_by(Article.created_at.desc())
-        .paginate(page=page, per_page=20)
+        .paginate(page=page, per_page=current_app.config["POSTS_PER_PAGE"])
     )
     return render_template("main/tag.html", tag=tag, articles=articles)
 
@@ -88,7 +88,7 @@ def tag(id):
 def search():
     query = request.args.get("q", "")
     page = request.args.get("page", 1, type=int)
-    per_page = current_app.config.get("POSTS_PER_PAGE", 9)
+    per_page = current_app.config.get("POSTS_PER_PAGE", 20)
     articles = []
     pagination = None
     if query:

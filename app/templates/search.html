@@ -4,23 +4,19 @@ content %}
   <div class="col-md-8">
     <h2>搜索结果: "{{ query }}"</h2>
     {% if articles %} {% for article in articles %}
-    <div class="card mb-3">
-      <div class="card-body">
-        <h3 class="card-title">
-          <a
-            href="{{ url_for('main.article', id=article.id) }}"
-            class="text-decoration-none"
-          >
-            {{ article.title }}
-          </a>
-        </h3>
-        <p class="card-text">{{ article.content[:200] }}...</p>
-        <div class="d-flex justify-content-between">
-          <small class="text-muted"
-            >发布时间: {{ article.created_at.strftime('%Y-%m-%d %H:%M')
-            }}</small
-          >
-        </div>
+    <div class="article-list-row">
+      <div class="article-list-tags">
+        {% for tag in article.tags %}
+        <span class="badge bg-secondary">{{ tag.name }}</span>
+        {% endfor %}
+      </div>
+      <h3 class="article-list-title">
+        <a href="{{ url_for('main.article', id=article.id) }}"
+          >{{ article.title }}</a
+        >
+      </h3>
+      <div class="article-list-date">
+        {{ article.created_at.strftime('%Y-%m-%d') }}
       </div>
     </div>
     {% endfor %}
