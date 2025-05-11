@@ -34,27 +34,27 @@ block admin_actions %}
         <td>{{ tag.articles|length }}</td>
         <td>{{ tag.created_at.strftime('%Y-%m-%d') }}</td>
         <td>
-          <div class="btn-group btn-group-sm">
-            <a
-              href="{{ url_for('admin.edit_tag', id=tag.id) }}"
-              class="btn btn-outline-primary"
+          <a
+            href="{{ url_for('admin.edit_tag', id=tag.id) }}"
+            class="btn btn-sm btn-outline-primary me-2"
+            title="编辑"
+          >
+            <i class="fas fa-edit"></i>
+          </a>
+          <form
+            action="{{ url_for('admin.delete_tag', id=tag.id) }}"
+            method="post"
+            class="d-inline"
+          >
+            <button
+              type="submit"
+              class="btn btn-sm btn-outline-danger"
+              onclick="return confirm('确定要删除这个主题吗？')"
+              title="删除"
             >
-              <i class="fas fa-edit"></i>
-            </a>
-            <form
-              action="{{ url_for('admin.delete_tag', id=tag.id) }}"
-              method="post"
-              class="d-inline"
-            >
-              <button
-                type="submit"
-                class="btn btn-outline-danger"
-                onclick="return confirm('确定要删除这个主题吗？')"
-              >
-                <i class="fas fa-trash"></i>
-              </button>
-            </form>
-          </div>
+              <i class="fas fa-trash"></i>
+            </button>
+          </form>
         </td>
       </tr>
       {% endfor %}

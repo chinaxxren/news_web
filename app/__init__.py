@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from app.extensions import db, login, babel
 from app.database import get_or_create
 from flask_wtf.csrf import CSRFProtect
+from .filters import register_filters
 
 # 基础配置
 basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
@@ -44,6 +45,24 @@ class Config:
     ADMIN_PASSWORD = "admin"
     WTF_CSRF_ENABLED = True
     WTF_CSRF_SECRET_KEY = os.environ.get("WTF_CSRF_SECRET_KEY") or "dev-csrf-key"
+
+
+def short_time_ago(dt):
+    now = datetime.utcnow()
+    if dt.tzinfo is not None:
+        now = now.replace(tzinfo=dt.tzinfo)
+    diff = now - dt
+    seconds = diff.total_seconds()
+    if seconds < 60:
+        return f"{int(seconds)}s"
+    elif seconds < 3600:
+        return f"{int(seconds // 60)}m"
+    elif seconds < 86400:
+        return f"{int(seconds // 3600)}h"
+    elif seconds < 604800:
+        return f"{int(seconds // 86400)}d"
+    else:
+        return dt.strftime("%Y-%m-%d")
 
 
 def create_app(config_class=Config):
@@ -100,6 +119,8 @@ def create_app(config_class=Config):
 
     app.jinja_env.filters["friendly_time"] = friendly_time
 
+    register_filters(app)
+
     # 初始化应用
     with app.app_context():
         # 创建数据库表
@@ -121,3 +142,7 @@ def create_app(config_class=Config):
         os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     return app
+
+
+def register_filters(app):
+    app.jinja_env.filters["short_time_ago"] = short_time_ago
