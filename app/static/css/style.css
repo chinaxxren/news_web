@@ -440,7 +440,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
+  padding: 0.5rem 0.75rem !important;
+  gap: 0.5rem !important;
+  min-height: 0 !important;
   border-bottom: 1px solid #eee;
   transition: background-color 0.2s;
 }
