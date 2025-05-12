@@ -619,3 +619,55 @@ a.badge.bg-secondary.text-decoration-none:focus {
   color: #434343 !important;
   text-decoration: none !important;
 }
+
+/* 让折叠菜单在移动端展开时有白色背景 */
+.navbar-collapse {
+  background: #fff;
+  border-radius: 0 0 0.5rem 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    width: auto !important;
+    min-width: 140px; /* 可根据实际菜单内容调整 */
+    max-width: 90vw;
+    display: none !important;
+    position: absolute;
+    right: 1rem;
+    top: 56px; /* 与导航栏高度一致 */
+    left: auto;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    z-index: 1050;
+  }
+  .navbar-collapse.show {
+    display: inline-block !important;
+  }
+  .navbar-collapse .navbar-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 水平居中 */
+    justify-content: center;
+    width: 100%;
+  }
+  .navbar-collapse .navbar-nav .nav-item {
+    width: 100%;
+    text-align: center;
+    margin: 0; /* 去除多余间隔 */
+    padding: 0;
+  }
+  .navbar-collapse .navbar-nav .nav-link {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  .navbar-collapse .navbar-nav .nav-item:not(:last-child) {
+    border-bottom: 1px solid #eee; /* 分隔线 */
+  }
+  .navbar-collapse .nav-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+}
