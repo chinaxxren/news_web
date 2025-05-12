@@ -93,14 +93,30 @@ def new_article():
             is_recommended=form.is_recommended.data,
             author=current_user,
         )
-        # 处理标签
+        # 处理主题
         tag_names = [name.strip() for name in form.tags.data.split(",") if name.strip()]
-        for tag_name in tag_names:
-            tag = Tag.query.filter_by(name=tag_name).first()
-            if not tag:
-                tag = Tag(name=tag_name)
-                db.session.add(tag)
-            article.tags.append(tag)
+        if len(tag_names) == 0:
+            flash("主题是必填项")
+            return render_template(
+                "admin/article_form.html",
+                title="新建文章",
+                form=form,
+                image_form=image_form,
+            )
+        if len(tag_names) > 1:
+            flash("只能填写一个主题")
+            return render_template(
+                "admin/article_form.html",
+                title="新建文章",
+                form=form,
+                image_form=image_form,
+            )
+        tag_name = tag_names[0]
+        tag = Tag.query.filter_by(name=tag_name).first()
+        if not tag:
+            tag = Tag(name=tag_name)
+            db.session.add(tag)
+        article.tags.append(tag)
 
         db.session.add(article)
         db.session.commit()
@@ -126,15 +142,33 @@ def edit_article(id):
         article.is_top = form.is_top.data
         article.is_recommended = form.is_recommended.data
 
-        # 更新标签
+        # 更新主题
         article.tags = []
         tag_names = [name.strip() for name in form.tags.data.split(",") if name.strip()]
-        for tag_name in tag_names:
-            tag = Tag.query.filter_by(name=tag_name).first()
-            if not tag:
-                tag = Tag(name=tag_name)
-                db.session.add(tag)
-            article.tags.append(tag)
+        if len(tag_names) == 0:
+            flash("主题是必填项")
+            return render_template(
+                "admin/article_form.html",
+                title="编辑文章",
+                form=form,
+                article=article,
+                image_form=image_form,
+            )
+        if len(tag_names) > 1:
+            flash("只能填写一个主题")
+            return render_template(
+                "admin/article_form.html",
+                title="编辑文章",
+                form=form,
+                article=article,
+                image_form=image_form,
+            )
+        tag_name = tag_names[0]
+        tag = Tag.query.filter_by(name=tag_name).first()
+        if not tag:
+            tag = Tag(name=tag_name)
+            db.session.add(tag)
+        article.tags.append(tag)
 
         db.session.commit()
         flash("文章已更新")
@@ -184,9 +218,9 @@ def new_tag():
         tag = Tag(name=form.name.data)
         db.session.add(tag)
         db.session.commit()
-        flash("标签已创建")
+        flash("主题已创建")
         return redirect(url_for("admin.tags"))
-    return render_template("admin/tag_form.html", title="新建标签", form=form)
+    return render_template("admin/tag_form.html", title="新建主题", form=form)
 
 
 @bp.route("/tag/<int:id>/edit", methods=["GET", "POST"])
@@ -198,11 +232,11 @@ def edit_tag(id):
     if form.validate_on_submit():
         tag.name = form.name.data
         db.session.commit()
-        flash("标签已更新")
+        flash("主题已更新")
         return redirect(url_for("admin.tags"))
     elif request.method == "GET":
         form.name.data = tag.name
-    return render_template("admin/tag_form.html", title="编辑标签", form=form)
+    return render_template("admin/tag_form.html", title="编辑主题", form=form)
 
 
 @bp.route("/tag/<int:id>/delete", methods=["POST"])
@@ -212,7 +246,7 @@ def delete_tag(id):
     tag = Tag.query.get_or_404(id)
     db.session.delete(tag)
     db.session.commit()
-    flash("标签已删除")
+    flash("主题已删除")
     return redirect(url_for("admin.tags"))
 
 

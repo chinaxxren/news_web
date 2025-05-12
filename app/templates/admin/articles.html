@@ -20,7 +20,7 @@ block admin_actions %}
   <div class="card-body p-0">
     {% for article in articles.items %}
     <div class="article-admin-row d-flex align-items-center" style="gap: 1rem">
-      <!-- 标签 -->
+      <!-- 主题 -->
       <div class="article-list-tags flex-shrink-0" style="max-width: 120px">
         {% if article.is_top %}
         <span class="badge bg-danger">置顶</span>
@@ -29,7 +29,7 @@ block admin_actions %}
         {% endif %} {% for tag in article.tags %}
         <a
           href="{{ url_for('main.tag', id=tag.id) }}"
-          class="badge bg-secondary me-1"
+          class="badge bg-secondary text-decoration-none me-1"
           >{{ tag.name }}</a
         >
         {% endfor %}

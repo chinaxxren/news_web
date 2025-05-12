@@ -23,14 +23,14 @@ def init_data():
         db.session.add(admin)
         click.echo("创建管理员用户...")
 
-    # 创建默认标签
+    # 创建默认主题
     default_tags = ["新闻", "技术", "生活", "娱乐", "体育"]
     for tag_name in default_tags:
         tag = Tag.query.filter_by(name=tag_name).first()
         if not tag:
             tag = Tag(name=tag_name)
             db.session.add(tag)
-            click.echo(f"创建标签: {tag_name}")
+            click.echo(f"创建主题: {tag_name}")
 
     try:
         db.session.commit()

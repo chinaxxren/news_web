@@ -17,7 +17,7 @@ class ArticleForm(FlaskForm):
     title = StringField("标题", validators=[DataRequired(), Length(max=200)])
     subtitle = StringField("副标题", validators=[Length(max=200)])
     content = TextAreaField("内容", validators=[DataRequired()])
-    tags = StringField("标签（用英文逗号分隔）", validators=[DataRequired()])
+    tags = StringField("主题", validators=[DataRequired()])
     is_published = BooleanField("发布")
     is_top = BooleanField("置顶")
     is_recommended = BooleanField("推荐")
@@ -27,22 +27,22 @@ class ArticleForm(FlaskForm):
         if tags.data:
             # 检查是否包含中文逗号
             if "，" in tags.data:
-                raise ValidationError("请使用英文逗号(,)分隔标签")
+                raise ValidationError("请使用英文逗号(,)分隔主题")
             # 检查是否包含其他特殊字符
             if any(char in tags.data for char in [";", ":", "|", "、"]):
-                raise ValidationError("请使用英文逗号(,)分隔标签")
-            # 检查标签是否为空
+                raise ValidationError("请使用英文逗号(,)分隔主题")
+            # 检查主题是否为空
             tag_list = [tag.strip() for tag in tags.data.split(",")]
             if any(not tag for tag in tag_list):
-                raise ValidationError("标签不能为空")
-            # 检查标签长度
+                raise ValidationError("主题不能为空")
+            # 检查主题长度
             if any(len(tag) > 50 for tag in tag_list):
-                raise ValidationError("每个标签长度不能超过50个字符")
+                raise ValidationError("每个主题长度不能超过50个字符")
 
 
 class TagForm(FlaskForm):
     csrf_token = HiddenField()
-    name = StringField("标签名称", validators=[DataRequired(), Length(max=50)])
+    name = StringField("主题名称", validators=[DataRequired(), Length(max=50)])
     submit = SubmitField("提交")
 
 

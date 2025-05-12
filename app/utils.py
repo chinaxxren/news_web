@@ -4,7 +4,7 @@ from flask import url_for
 
 
 def markdown_to_html(text):
-    # 允许的标签
+    # 允许的主题
     allowed_tags = [
         "a",
         "abbr",

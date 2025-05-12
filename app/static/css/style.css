@@ -23,7 +23,7 @@ body {
   height: 56px;
 }
 
-/* 标签样式 */
+/* 主题样式 */
 .badge {
   font-weight: normal;
   padding: 0.5em 0.8em;
@@ -288,12 +288,11 @@ body {
 }
 
 .article-list-date {
-  margin-left: 1rem !important;
   min-width: 60px !important;
   max-width: 100px !important;
   font-size: 0.95rem !important;
   color: inherit !important;
-  text-align: right !important;
+  text-align: left !important;
   line-height: 1.5 !important;
   flex-shrink: 0 !important;
   overflow: hidden !important;
@@ -320,8 +319,8 @@ body {
   }
 
   .article-list-date {
-    margin-left: 0.5rem !important;
-    text-align: right !important;
+    margin-left: 1rem !important;
+    text-align: left !important;
     flex-shrink: 0 !important;
   }
 }
@@ -607,4 +606,16 @@ body {
 .admin-hint-box ul {
   padding-left: 1.2em;
   margin-bottom: 0;
+}
+
+a.badge.bg-secondary.text-decoration-none {
+  background-color: #dbdbdb !important; /* Bootstrap 红色 */
+  color: #434343 !important;
+  border: none !important;
+}
+a.badge.bg-secondary.text-decoration-none:hover,
+a.badge.bg-secondary.text-decoration-none:focus {
+  background-color: #dbdbdb !important; /* 深一点的红色，悬停效果 */
+  color: #434343 !important;
+  text-decoration: none !important;
 }

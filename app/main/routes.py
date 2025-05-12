@@ -49,7 +49,7 @@ def article(id):
         flash("该文章尚未发布")
         return redirect(url_for("main.index"))
 
-    # 获取相关文章（根据标签）
+    # 获取相关文章（根据主题）
     related_articles = []
     if article.tags:
         related_articles = (
